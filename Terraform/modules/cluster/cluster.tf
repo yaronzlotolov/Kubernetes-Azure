@@ -33,7 +33,7 @@ resource "azurerm_kubernetes_cluster" "aks-demo" {
 
     network_profile {
         network_plugin = "kubenet"
-        load_balamcer_sku = "Standard"
+        load_balancer_sku = "Standard"
     }
 
     addon_profile {
@@ -57,6 +57,6 @@ resource "azurerm_kubernetes_cluster" "aks-demo" {
           enabled = false
       }
     }
-    
+
 }
 

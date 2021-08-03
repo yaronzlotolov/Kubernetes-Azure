@@ -17,3 +17,11 @@ module "cluster" {
   location              = var.location
   kubernetes_version    = var.kubernetes_version
 }
+
+module "mssql" {
+  source                = "./modules/mssql/"
+  host                  = "${module.cluster.host}"
+  client_certificate    = "${base64decode(module.cluster.client_certificate)}"
+  client_key            = "${base64decode(module.cluster.client_key)}"
+  cluster_ca_certificate= "${base64decode(module.cluster.cluster_ca_certificate)}"
+}
