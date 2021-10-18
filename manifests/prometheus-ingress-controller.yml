@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+     kubernetes.io/ingress.class: "nginx"
+     nginx.ingress.kubernetes.io/rewrite-target: /   #new
+  name: prometheus-ingress
+spec:
+  tls:
+  - hosts:
+    - prometheus.gui.com
+  rules:
+  - host: prometheus.gui.com
+    http:
+     paths:
+      - path: /
+        backend:
+          serviceName: prometheus-grafana
+          servicePort: 80

@@ -1,0 +1,137 @@
+Terraform - infrastructure ascode (Iac)
+
+
+******* Begin Install Terraform**********
+Install Terraform - https://www.terraform.io/downloads.html
+Set Env variable for tearraform.exe location
+Close the VSCode and open it again
+Enter teraform.exe in the VSCode terninlal
+Installation done!
+******* End Install Terraform**********
+
+
+****** Begin Create Service Principal with contributer for terraform ***********
+https://www.terraform.io/docs/providers/azurerm/guides/service_principal_client_secret.html
+
+Service Principal: a system User that can change resources in Azure - does not require az login
+az login
+az account list  ->   "id": "*********************665c",
+az ad sp create-for-rbac --role="Contributor" --scopes="subscriptions/133bc1d5-767e-4628-a9d1-0914ff59665c" --name="TerraformServicePrincipal"
+ 
+Copy to notepad the output:
+
+
+Verify: In Azure Portal > Home > Azure Active Directory > App registrations > View All Application in directory > Select "azure-cli-2020-08-20-07-00-14" > compare with notepad
+"appId" = Application (client) ID
+"name" = Display name
+"tenant" = Directory (tenant) ID
+"password": In Azure Active Directory > App registrations > View All Application in directory > "azure-cli-2020-08-20-07-00-14" > rabc client secret (password) located and hidden
+
+Create Service Prinipal Manually > https://www.youtube.com/watch?v=Ff0DoAmpv6w (49:00)   (Auth Azure using Service Principal and Client Secret)
+****** End Create Service Principal with contributer for terraform ***********
+
+
+
+**** Optional: Add the keys into system environment variables so there is no need to do az login for terraform commands (init,plan,apply) (this is for user/developer):
+setx ARM_CLIENT_ID <Application (client) ID>
+setx ARM_SUBSCRIPTION_ID <subsciprion>
+setx ARM_TENANT_ID <Directory (tenant) ID>
+setx ARM_CLIENT_SECRET <password>
+
+az logout : to check that terraform can run from client without az login
+**** Optional: Add the keys into system environment variables so there is no need to do az login for terraform commands (init,plan,apply) (this is for user/developer):
+
+
+****** main.tf *******
+Get AKS latest version in westus -> for main.tf 
+$version=(az aks get-versions -l westus --query 'orchestrators[-1].orchestratorVersion' -o tsv)
+echo $version     (1.18.6)
+
+Create main.tf : Terrform website: https://www.terraform.io/docs/providers/azurerm/r/mssql_database.html
+
+***Missing in main.tf > permission to AKS to pull images from ACR: (fixed?)
+Command : az aks update -n AKSyaronz -g RGyaronz --attach-acr ACRyaronz
+done in Azure DevOps pipeline!!!
+****** main.tf *******
+
+
+******** Begin create storage contianer in Azure for terraform.state *************
+https://docs.microsoft.com/en-us/azure/developer/terraform/store-state-in-azure-storage
+
+az login
+az account show
+
+run powershell C:\Project\Terraform\Terraform\TerraformStorage.ps1
+
+Output:
+storage_account_name: sayaronztfstate
+container_name: cnyaronztfstate
+access_key: xaoKqIfd8j8y2txJCfat95rRMMKG15vKkZsX5PTuoKUn801d7mXo/qpkgPRPpPBlSLAPpHxAUTwcRFJK9NbmFg==
+
+In Azure Portal > Resource groups > rgyaronztfstate > saaronztfstate > Containers > cnyaronztfstate > empty!
+
+Add to environmet variable the access key to storage account:
+setx ARM_ACCESS_KEY /FSEhsExoFs0W3UzNyvk44gUb/8dzbF8rb0aXEXJLAkgyC5T4YaNCcEtUmJhoDvxipwAKtiHBZJ4O0jhY+cZVA==
+Close and open VSCODE!!! if not working close and open again...
+
+updated main.tf with the storage account:
+
+terraform {
+  backend "azurerm" {
+    resource_group_name  = rgyaronztfstate
+    storage_account_name = sayaronztfstate
+    container_name       = cnyaronztfstate
+    key                  = terraform.tfstate
+  }
+}
+******** End create storage contianer in Azure for terraform.state *************
+
+******Begin Run *****
+*Delete local terraform.state and terraform.state.backup if exists
+terrform init  : to set the azure storage that we created in main.tf for terraform.state
+terraform plan -out out.plan
+terraform apply out.plan
+
+
+--attach-acr acryaronz:
+az acr login --name acryaronz
+az aks get-credentials --resource-group rgyaronz --name aksyaronz --overwrite-existing
+az aks update -n aksyaronz -g rgyaronz --attach-acr acryaronz  (Working from cloud shell in Azure)
+
+az aks update -n aksyaronz -g rgyaronz --detach-acr acryaronz
+kubectl describe service ingress-nginx-ingress-controller
+
+terraform destroy : delete all resources created by main.tf
+******End Run *****
+
+
+https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/lock-resources
+Solve lock - az storage blob lease break -b sayaronztfstate -c cnyaronztfstate
+* require the secret for TerraformServicePrincipal 
+Get-AzResourceLock
+az lock list
+az lock delete --ids $lockid
+
+*With ReayOnly lock terrform falied  - plan and apply
+
+az lock create --name Lockaksyaronz --lock-type ReadOnly --resource-group rgyaronz --resource-name aksyaronz --resource-type Microsoft.Web/sites
+
+
+
+FINIISH: 
+az acr login --name acryaronz
+az aks get-credentials --resource-group rgyaronz --name aksyaronz --overwrite-existing
+kubectl get nodes
+az aks update -n aksyaronz -g rgyaronz --attach-acr acryaronz (from cloud shell)
+kubectl describe service ingress-nginx-ingress-controller
+
+
+
+
+
+https://www.terraform.io/docs/providers/azurerm/r/log_analytics_solution.html
+https://github.com/terraform-providers/terraform-provider-azurerm/issues/2959
+
+open the ip range for Azure DevOps
+az aks update --resource-group rgyaronz --name aksyaronz --api-server-authorized-ip-ranges ""
+az aks update --resource-group rgyaronz --name aksyaronz --api-server-authorized-ip-ranges=
