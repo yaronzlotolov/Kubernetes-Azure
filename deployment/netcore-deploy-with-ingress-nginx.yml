@@ -4,7 +4,7 @@ metadata:
   name: employee-deployment
   namespace: employee
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: employee-pod
@@ -69,10 +69,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - yaron.zlotolov.com
+    - employee.management.com
     secretName: employee-secret
   rules:
-  - host: yaron.zlotolov.com
+  - host: employee.management.com
     http:
      paths:
       - path: /

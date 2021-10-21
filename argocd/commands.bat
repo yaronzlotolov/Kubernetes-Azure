@@ -22,33 +22,24 @@ pause
 kubectl get all -n argocd
 pause
 
-kubectl get svc -n argocd
-get the port for argocd url from "argocd-server" service
-pause
-kubectl apply -f .\argocd-ingress-controller.yml
-kubectl get ing -n argocd
-kubectl describe ing -n argocd
-C:\Windows\System32\drivers\etc\hosts > Address argocd.gui.com 
-https://argocd.gui.com/
-
 rem *** get login password and decode base64***
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}"
-decode the password here: https://www.base64decode.org/  (QjehMsvnephbfqVV)
 
-rem *** get service port***
-kubectl get svc -n argocd (30917)
+decode the password here: https://www.base64decode.org/  (NHEYjgHlPFXAEtPt)
 
-rem *** first login ***
-.\argocd.exe login localhost:30917
-user:admin
-password: decoded password (pKJytFOYYSryobiL)
+kubectl get svc -n argocd
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+https://localhost:8080 
+
+user:admin 
+password: NHEYjgHlPFXAEtPt
 
 rem *** change password ***
 .\argocd.exe account update-password
 decoded password (pKJytFOYYSryobiL) --> admin
 
 rem *** login from GUI ***
-http://localhost:30917
+https://localhost:8080 
 user:admin 
 password: admin
 
