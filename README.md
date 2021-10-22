@@ -2,5 +2,5 @@
 The deployment requires .Net core 3.1, Entity Framework Core, Visual Studio Code, Terraform and Git.
 
 The example contains kubernetes components like deployments,
-pods, services, replicaset, secrets, persistent volume, ingress nginx and
+pods, services, replicaset, secrets, persistent volume, ingress nginx,
 prometheus monitoring tool and argocd gitops tool. Instructions are located in Documents folder.
